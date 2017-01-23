@@ -24,12 +24,12 @@ import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
 
-CLASSES = ('__background__',
-           'aeroplane', 'bicycle', 'bird', 'boat',
-           'bottle', 'bus', 'car', 'cat', 'chair',
-           'cow', 'diningtable', 'dog', 'horse',
-           'motorbike', 'person', 'pottedplant',
-           'sheep', 'sofa', 'train', 'tvmonitor')
+CLASSES = ('__background__', 'king', 'eking', 'giant')
+#           'aeroplane', 'bicycle', 'bird', 'boat',
+#           'bottle', 'bus', 'car', 'cat', 'chair',
+#           'cow', 'diningtable', 'dog', 'horse',
+#           'motorbike', 'person', 'pottedplant',
+#           'sheep', 'sofa', 'train', 'tvmonitor')
 
 NETS = {'vgg16': ('VGG16',
                   'VGG16_faster_rcnn_final.caffemodel'),
@@ -37,15 +37,15 @@ NETS = {'vgg16': ('VGG16',
                   'ZF_faster_rcnn_final.caffemodel')}
 
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im, class_name, dets, ax, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
         return
 
-    im = im[:, :, (2, 1, 0)]
-    fig, ax = plt.subplots(figsize=(12, 12))
-    ax.imshow(im, aspect='equal')
+    #im = im[:, :, (2, 1, 0)]
+    #fig, ax = plt.subplots(figsize=(12, 12))
+    #ax.imshow(im, aspect='equal')
     for i in inds:
         bbox = dets[i, :4]
         score = dets[i, -1]
@@ -85,6 +85,9 @@ def demo(net, image_name):
            '{:d} object proposals').format(timer.total_time, boxes.shape[0])
 
     # Visualize detections for each class
+    im = im[:, :, (2, 1, 0)]
+    fig, ax = plt.subplots(figsize=(12, 12))
+    ax.imshow(im, aspect='equal')
     CONF_THRESH = 0.8
     NMS_THRESH = 0.3
     for cls_ind, cls in enumerate(CLASSES[1:]):
@@ -95,7 +98,7 @@ def demo(net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(im, cls, dets, thresh=CONF_THRESH)
+        vis_detections(im, cls, dets, ax, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -107,6 +110,7 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16]',
                         choices=NETS.keys(), default='vgg16')
+    parser.add_argument('--model', dest='model', help='model to use')
 
     args = parser.parse_args()
 
@@ -122,6 +126,8 @@ if __name__ == '__main__':
     caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
                               NETS[args.demo_net][1])
 
+    prototxt = 'models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt'
+    caffemodel = args.model
     if not os.path.isfile(caffemodel):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
@@ -143,6 +149,7 @@ if __name__ == '__main__':
 
     im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
                 '001763.jpg', '004545.jpg']
+    im_names = ['filename_101.jpg','filename_102.jpg','filename_103.jpg','filename_104.jpg','filename_105.jpg']
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Demo for data/demo/{}'.format(im_name)

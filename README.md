@@ -223,19 +223,20 @@ output/<experiment directory>/<dataset name>/<network snapshot name>/
 py-faster-rcnn commit号 96dc9f1,caffe用release rc4(支持cudnn 5).
 
 从caffe rc4拷贝如下文件到py-faster-rcnn自带的caffe里, 当前在caffe rc4目录下。
-cp ./include/caffe/util/cudnn.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/util/
-cp src/caffe/layers/cudnn_sigmoid_layer.cu ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/ -i
-cp src/caffe/layers/cudnn_sigmoid_layer.cpp ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/ -i
-cp include/caffe/layers/cudnn_sigmoid_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ 
+cp ./include/caffe/util/cudnn.hpp ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/include/caffe/util/
+cp src/caffe/layers/cudnn_sigmoid_layer.cu ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/src/caffe/layers/ 
+cp src/caffe/layers/cudnn_sigmoid_layer.cpp ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/src/caffe/layers/ 
+cp include/caffe/layers/cudnn_sigmoid_layer.hpp ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/include/caffe/layers/ 
 
-cp include/caffe/layers/cudnn_relu_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ -i
-cp src/caffe/layers/cudnn_relu_layer.c* ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/
+cp include/caffe/layers/cudnn_relu_layer.hpp ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/include/caffe/layers/ 
+cp src/caffe/layers/cudnn_relu_layer.c* ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/src/caffe/layers/
 
 
-cp include/caffe/layers/cudnn_tanh_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ -i
-cp src/caffe/layers/cudnn_tanh_layer.c* ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/
+cp include/caffe/layers/cudnn_tanh_layer.hpp ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/include/caffe/layers/ 
+cp src/caffe/layers/cudnn_tanh_layer.c* ../py-faster-rcnn.ruqiang826/caffe-fast-rcnn/src/caffe/layers/
 
 然后编译还是会错，出错文件src/caffe/layers/cudnn_conv_layer.cu.里面有两个带v3后缀的函数，把"_v3"去掉,就能编译过了。这是py-faster-rcnn自带caffe支持cudnn 5的最小修改集合
+从github上下载Makefile.config. 或者从这个repository下。
 然后 make -j8 ;make pycaffe
 
 2. 
@@ -245,15 +246,16 @@ cp src/caffe/layers/cudnn_tanh_layer.c* ../py-faster-rcnn.orig/caffe-fast-rcnn/s
 export CPLUS_INCLUDE_PATH=/usr/include/python2.7
 
 3. 运行
+用脚本下载下来data目录的VOCdevkit2007 ，并下载data/imagenet_models，就可以运行了。
 ./experiments/scripts/faster_rcnn_end2end.sh  0 VGG_CNN_M_1024 pascal_voc
-修改./experiments/scripts/faster_rcnn_end2end.sh 的iter数量，如果不想用imagenet的模型初始化，可以把train的--weight那一行删掉。然后执行
+修改./experiments/scripts/faster_rcnn_end2end.sh 的iter数量，如果不想用imagenet的模型初始化，可以把train的--weight那一行删掉。然后执行。
 ！！！这里的weight初始化，其实不仅仅是神经网络的权重，还包括一些hyperparameter、设置等等。如果不用这个imagenet的模型初始化，训练不出来的。这里走了很多弯路。我一直以为自己train的model和imagenet完全不同，所以就把这个初始化删除了。怎么也训练不出来像样的东西。找了很久才发现这个原因。！！！
 
 4. demo
 修改 tools/demo.py 来读入训练的模型，并画图。可以看commit的代码
 
 5. 
-改成自己的数据,4分类(含background)：
+改成自己的数据,4分类(含background)： 把84都改成16, 把21都改成4
 修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/train.prototxt ， 把bbox_pred 的num_output 改成 16,  input-data 的param_str: "'num_classes': 4",  roi-data 的 num_classes 也改成4.
 修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt 内容与train 类似.
 
