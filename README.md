@@ -215,3 +215,94 @@ Test outputs are saved under:
 ```
 output/<experiment directory>/<dataset name>/<network snapshot name>/
 ```
+2017.1.21:
+
+1. caffe
+这个代码有9个月没有更新了， cudnn升级到v5, 这里对应的应该是4,所以自带的caffe和cudnn不匹配了，编译不过。caffe主线上已经升级到cudnn 5了。之前把caffe 最新版拷过来，覆盖这里的caffe。但后来觉得这个做法不妥，应该最小修改这里自带的caffe。
+
+py-faster-rcnn commit号 96dc9f1,caffe用release rc4(支持cudnn 5).
+
+从caffe rc4拷贝如下文件到py-faster-rcnn自带的caffe里, 当前在caffe rc4目录下。
+cp ./include/caffe/util/cudnn.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/util/
+cp src/caffe/layers/cudnn_sigmoid_layer.cu ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/ -i
+cp src/caffe/layers/cudnn_sigmoid_layer.cpp ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/ -i
+cp include/caffe/layers/cudnn_sigmoid_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ 
+
+cp include/caffe/layers/cudnn_relu_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ -i
+cp src/caffe/layers/cudnn_relu_layer.c* ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/
+
+
+cp include/caffe/layers/cudnn_tanh_layer.hpp ../py-faster-rcnn.orig/caffe-fast-rcnn/include/caffe/layers/ -i
+cp src/caffe/layers/cudnn_tanh_layer.c* ../py-faster-rcnn.orig/caffe-fast-rcnn/src/caffe/layers/
+
+然后编译还是会错，出错文件src/caffe/layers/cudnn_conv_layer.cu.里面有两个带v3后缀的函数，把"_v3"去掉,就能编译过了。这是py-faster-rcnn自带caffe支持cudnn 5的最小修改集合
+然后 make -j8 ;make pycaffe
+
+2. 
+在py-faster-rcnn/lib 目录make
+
+ 编译时有个python头文件pyconfig.h找不到，需要 
+export CPLUS_INCLUDE_PATH=/usr/include/python2.7
+
+3. 运行
+./experiments/scripts/faster_rcnn_end2end.sh  0 VGG_CNN_M_1024 pascal_voc
+修改./experiments/scripts/faster_rcnn_end2end.sh 的iter数量，如果不想用imagenet的模型初始化，可以把train的--weight那一行删掉。然后执行
+！！！这里的weight初始化，其实不仅仅是神经网络的权重，还包括一些hyperparameter、设置等等。如果不用这个imagenet的模型初始化，训练不出来的。这里走了很多弯路。我一直以为自己train的model和imagenet完全不同，所以就把这个初始化删除了。怎么也训练不出来像样的东西。找了很久才发现这个原因。！！！
+
+4. demo
+修改 tools/demo.py 来读入训练的模型，并画图。可以看commit的代码
+
+5. 
+改成自己的数据,4分类(含background)：
+修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/train.prototxt ， 把bbox_pred 的num_output 改成 16,  input-data 的param_str: "'num_classes': 4",  roi-data 的 num_classes 也改成4.
+修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt 内容与train 类似.
+
+修改lib/datasets/pascal_voc.py 关于类的名字，和数据集合一致。我这里的四个类是 self._classes = ('__background__', 'king', 'eking', 'giant')
+修改 tools/demo.py 的CLASS，内容与上面pascal_voc.py类似。
+把data目录下的数据替换成自己的训练数据
+
+
+6. cache
+这样，train 和test都可以跑过了。
+另外注意train和test都会生成cache文件，两次运行改了图片内容，注意删掉cache，否则会报错。
+这是train的cache：/home/ruqiang/github/py-faster-rcnn_ruqiang826/data/cache/voc_2007_trainval_gt_roidb.pkl
+test cache :      /home/ruqiang/github/py-faster-rcnn_ruqiang826/data/VOCdevkit2007/annotations_cache/annots.pkl
+
+最后如何运行，看run.sh 
+
+
+## 7. 代码栈
+1. tools/train_net.py  是入口  
+2. 首要目标是找到train数据的逻辑。  
+  train_net.py   
+    -> from datasets.factory import get_imdb  这里其实执行了factory.py，初始化了imdb的__sets。注意初始化只是一个lambda表达式，下面get_imdb的时候才执行lambda表达式.  
+    -> tools/train_net.py:combined_roidb  ..  
+    -> tools/train_net.py:get_roidb   ..  
+      -> lib/datasets/factory.py:get_imdb  只是返回了刚才初始化好的imdb sets中的一个元素。这里执行了lambda表达式，获取了一个pascal_voc的类。先执行了imdb的init函数，又执行自己的init函数  
+      -> set_proposal_method 这是pascal_vod的基类imdb的函数，在lib/datasets/imdb.py， 这里把roidb_handler 设置成了 gt_roidb，稍后就会执行到，这个是数据处理的关键。  
+      -> get_training_roidb 在 lib/fast_rcnn/train.py。  
+        -> imdb.append_flipped_images() 还是在imdb.py。   
+          -> self.roidb[i]['boxes'].copy() 首次调用roidb，  
+            -> imdb.py 的 roidb(self)。如果已经调用过，roidb就可以直接返回了。如果没有调用过，走下面：  
+              -> self.roidb_handler() 这个就是gt_roidb了,这玩意在上面set的，找了好久.  
+                -> lib/datasets/pascal_voc.py:gt_roidb()  
+                  -> _load_pascal_annotation : 在VOCdevkit2007/VOC2007/Annotations 目录下，有每个jpg的xml标注，包括了object的范围和类别. 这个函数返回了每个图片的object 坐标、object类别、overlaps(第一维是object id，第二维是类别), object区域面积  
+          -> 回到append_flipped_images()，这个是翻转图像，多得到两张图片  
+      -> 回到 lib/fast_rcnn/train.py:get_training_roidb   
+        -> lib/roi_data_layer/roidb.py:prepare_roidb:对每张图像增加了max_classes 和 max_overlaps两个变量。还不清楚这两个是做什么的。  
+    -> 回到 tools/train_net.py:combined_roidb ,后面对多个imdb的情况做了处理，然后返回imdb、roidb。   
+    -> 回到tools/train_net.py:main。数据处理完毕。  
+    另外，数据标注在github上有个工具，tzutalin/labelImg，输出就是PASCAL VOC格式。  
+  
+3. main 的下一步是 lib/fast_rcnn/train.py:train_net  
+  -> filter_roidb: 这里大致的逻辑是，如果是少数object，认为是foreground， 如果是多个同类型object ，认为是background 。无论那个，至少得有满足数量的object。这里没太仔细看。  
+  fast rcnn的逻辑应该在上面跑通阶段，拷过去的两个cpp文件roi_pooling_layer. 这是自己的逻辑和caffe框架merge的地方。没有看这里。  
+  
+4. 先看test_net.py  
+  找到test的地方，获取预测的边界的地方。用cv2.rectangle 和 cv2.imwrite 把画了框的图像保存下来。  
+
+5. 标注自己的数据
+    想替换自己的数据集，用labelImg标注了十几个
+  
+
+
