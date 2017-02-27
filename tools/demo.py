@@ -150,6 +150,13 @@ if __name__ == '__main__':
     im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
                 '001763.jpg', '004545.jpg']
     im_names = ['filename_101.jpg','filename_102.jpg','filename_103.jpg','filename_104.jpg','filename_105.jpg']
+    im_names = ['img_664.jpg','img_660.jpg','img_661.jpg','img_662.jpg','img_663.jpg','img_665.jpg','img_666.jpg','img_667.jpg','img_668.jpg']
+    im_names = ['king06.png','king01.png','img_664.jpg','img_660.jpg','img_661.jpg','img_662.jpg','giant41.png','giant01.png','giant19.png','img2_880.jpg','img2_881.jpg','img2_882.jpg']
+    im_names = []
+   
+    for i in open('tools/demo.txt'):
+        im_names.append(i.rstrip('\n'))
+
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Demo for data/demo/{}'.format(im_name)
