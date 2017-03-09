@@ -23,8 +23,11 @@ import numpy as np
 import scipy.io as sio
 import caffe, os, sys, cv2
 import argparse
+import pdb
 
-CLASSES = ('__background__', 'king', 'eking', 'giant')
+CLASSES = ('__background__', 'king', 'eking', 'giant',
+           'arena', 'darena', 'earena','bomb', 'witch',
+           'musketeer')
 #           'aeroplane', 'bicycle', 'bird', 'boat',
 #           'bottle', 'bus', 'car', 'cat', 'chair',
 #           'cow', 'diningtable', 'dog', 'horse',
@@ -88,11 +91,14 @@ def demo(net, image_name):
     im = im[:, :, (2, 1, 0)]
     fig, ax = plt.subplots(figsize=(12, 12))
     ax.imshow(im, aspect='equal')
-    CONF_THRESH = 0.8
+    CONF_THRESH = 0.1
     NMS_THRESH = 0.3
+    print "###",len(scores), len(boxes)
     for cls_ind, cls in enumerate(CLASSES[1:]):
         cls_ind += 1 # because we skipped background
         cls_boxes = boxes[:, 4*cls_ind:4*(cls_ind + 1)]
+        #pdb.set_trace()
+        print cls_ind,cls
         cls_scores = scores[:, cls_ind]
         dets = np.hstack((cls_boxes,
                           cls_scores[:, np.newaxis])).astype(np.float32)
@@ -121,10 +127,10 @@ if __name__ == '__main__':
 
     args = parse_args()
 
-    prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
-                            'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
-                              NETS[args.demo_net][1])
+    #prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
+    #                        'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
+    #caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
+    #                          NETS[args.demo_net][1])
 
     prototxt = 'models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt'
     caffemodel = args.model

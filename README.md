@@ -256,8 +256,8 @@ export CPLUS_INCLUDE_PATH=/usr/include/python2.7
 
 5. 
 改成自己的数据,4分类(含background)： 把84都改成16, 把21都改成4
-修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/train.prototxt ， 把bbox_pred 的num_output 改成 16,  input-data 的param_str: "'num_classes': 4",  roi-data 的 num_classes 也改成4.
-修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt 内容与train 类似.
+修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/train.prototxt ， 把bbox_pred 的num_output 改成 16,  input-data 的param_str: "'num_classes': 4",  roi-data 的 num_classes 也改成4.  cls_score 的 num_output 改成4
+修改 models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt 内容与train 类似，只改bbox_pred和cls_score.
 
 修改lib/datasets/pascal_voc.py 关于类的名字，和数据集合一致。我这里的四个类是 self._classes = ('__background__', 'king', 'eking', 'giant')
 修改 tools/demo.py 的CLASS，内容与上面pascal_voc.py类似。
