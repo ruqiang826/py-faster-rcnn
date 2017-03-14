@@ -53,6 +53,7 @@ def vis_detections(im, class_name, dets, ax, thresh=0.5):
         bbox = dets[i, :4]
         score = dets[i, -1]
 
+        print "for adjust",class_name,score
         ax.add_patch(
             plt.Rectangle((bbox[0], bbox[1]),
                           bbox[2] - bbox[0],
@@ -61,7 +62,7 @@ def vis_detections(im, class_name, dets, ax, thresh=0.5):
             )
         ax.text(bbox[0], bbox[1] - 2,
                 '{:s} {:.3f}'.format(class_name, score),
-                bbox=dict(facecolor='blue', alpha=0.5),
+                bbox=dict(facecolor='blue', alpha=0.2),
                 fontsize=14, color='white')
 
     ax.set_title(('{} detections with '
@@ -91,18 +92,16 @@ def demo(net, image_name):
     im = im[:, :, (2, 1, 0)]
     fig, ax = plt.subplots(figsize=(12, 12))
     ax.imshow(im, aspect='equal')
-    CONF_THRESH = 0.1
+    CONF_THRESH = 0.8
     NMS_THRESH = 0.3
-    print "###",len(scores), len(boxes)
     for cls_ind, cls in enumerate(CLASSES[1:]):
         cls_ind += 1 # because we skipped background
         cls_boxes = boxes[:, 4*cls_ind:4*(cls_ind + 1)]
-        #pdb.set_trace()
-        print cls_ind,cls
         cls_scores = scores[:, cls_ind]
         dets = np.hstack((cls_boxes,
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
+        #pdb.set_trace()
         dets = dets[keep, :]
         vis_detections(im, cls, dets, ax, thresh=CONF_THRESH)
 
@@ -160,7 +159,7 @@ if __name__ == '__main__':
     im_names = ['king06.png','king01.png','img_664.jpg','img_660.jpg','img_661.jpg','img_662.jpg','giant41.png','giant01.png','giant19.png','img2_880.jpg','img2_881.jpg','img2_882.jpg']
     im_names = []
    
-    for i in open('tools/demo.txt'):
+    for i in open('data/demo/demo.txt'):
         im_names.append(i.rstrip('\n'))
 
     for im_name in im_names:
