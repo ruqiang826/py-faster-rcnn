@@ -28,8 +28,9 @@ import pdb
 CLASSES = ('__background__', 'king', 'eking', 'giant',
            'arena', 'darena', 'earena','bomb', 'witch',
            'musketeer', 'prince', 'dragon', 'knight',
-                         'minipekka', 'skeleton', 'skeletonarmy',
-                         'speargoblin', 'speargoblins')
+           'minipekka', 'skeleton', 'skeletonarmy',
+           'speargoblin', 'speargoblins', 'archers',
+           'goblin', 'goblins')
 #           'aeroplane', 'bicycle', 'bird', 'boat',
 #           'bottle', 'bus', 'car', 'cat', 'chair',
 #           'cow', 'diningtable', 'dog', 'horse',

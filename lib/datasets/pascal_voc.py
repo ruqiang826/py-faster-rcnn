@@ -39,7 +39,8 @@ class pascal_voc(imdb):
                          'bomb', 'witch', 'musketeer',
                          'prince', 'dragon', 'knight',
                          'minipekka', 'skeleton', 'skeletonarmy',
-                         'speargoblin', 'speargoblins')
+                         'speargoblin', 'speargoblins', 'archers',
+                         'goblin', 'goblins')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()

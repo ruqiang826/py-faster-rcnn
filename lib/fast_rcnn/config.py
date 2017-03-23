@@ -22,6 +22,13 @@ import numpy as np
 # `pip install easydict` if you don't have it
 from easydict import EasyDict as edict
 
+CLASSES = ('__background__', 'king', 'eking', 'giant',
+           'arena', 'darena', 'earena','bomb', 'witch',
+           'musketeer', 'prince', 'dragon', 'knight',
+           'minipekka', 'skeleton', 'skeletonarmy',
+           'speargoblin', 'speargoblins', 'archers',
+           'goblin', 'goblins')
+
 __C = edict()
 # Consumers can get config by:
 #   from fast_rcnn_config import cfg
@@ -68,7 +75,7 @@ __C.TRAIN.BBOX_REG = True
 __C.TRAIN.BBOX_THRESH = 0.5
 
 # Iterations between snapshots
-__C.TRAIN.SNAPSHOT_ITERS = 10000
+__C.TRAIN.SNAPSHOT_ITERS = 100
 
 # solver.prototxt specifies the snapshot path prefix, this adds an optional
 # infix to yield the path: <prefix>[_<infix>]_iters_XYZ.caffemodel
@@ -122,6 +129,7 @@ __C.TRAIN.RPN_BBOX_INSIDE_WEIGHTS = (1.0, 1.0, 1.0, 1.0)
 # and give negatives a weight of (1 - p)
 # Set to -1.0 to use uniform example weighting
 __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
+__C.TRAIN.WITH_TEST = True
 
 
 #

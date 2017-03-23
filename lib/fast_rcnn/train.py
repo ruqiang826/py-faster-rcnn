@@ -16,6 +16,7 @@ import os
 
 from caffe.proto import caffe_pb2
 import google.protobuf as pb2
+from utils.model_test import model_test
 
 class SolverWrapper(object):
     """A simple wrapper around Caffe's solver.
@@ -77,8 +78,12 @@ class SolverWrapper(object):
 
         infix = ('_' + cfg.TRAIN.SNAPSHOT_INFIX
                  if cfg.TRAIN.SNAPSHOT_INFIX != '' else '')
-        filename = (self.solver_param.snapshot_prefix + infix +
-                    '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
+        if cfg.TRAIN.WITH_TEST == True:
+            filename = (self.solver_param.snapshot_prefix + infix +
+                        '_withtest' + '.caffemodel')
+        else:
+            filename = (self.solver_param.snapshot_prefix + infix +
+                        '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
         filename = os.path.join(self.output_dir, filename)
 
         net.save(str(filename))
@@ -88,6 +93,23 @@ class SolverWrapper(object):
             # restore net to original state
             net.params['bbox_pred'][0].data[...] = orig_0
             net.params['bbox_pred'][1].data[...] = orig_1
+
+        ### add for test model ##
+        if cfg.TRAIN.WITH_TEST == True:
+            cfg.TEST.HAS_RPN = True  # Use RPN for proposals
+            caffemodel = str(filename)
+            if not os.path.isfile(caffemodel):
+                raise IOError(('{:s} not found.\nDid you run ./data/script/'
+                               'fetch_faster_rcnn_models.sh?').format(caffemodel))
+            prototxt = 'models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt'
+            caffe.set_mode_gpu()
+            caffe.set_device(0)
+            cfg.GPU_ID = 0
+            net2 = caffe.Net(prototxt, caffemodel, caffe.TEST)
+            im_names = os.listdir("test_data/img")
+
+            a,b = model_test(net2, im_names, "test_data", self.solver.iter)
+            print a,b,b/a
         return filename
 
     def train_model(self, max_iters):
