@@ -13,6 +13,7 @@ import roi_data_layer.roidb as rdl_roidb
 from utils.timer import Timer
 import numpy as np
 import os
+import datetime
 
 from caffe.proto import caffe_pb2
 import google.protobuf as pb2
@@ -53,11 +54,14 @@ class SolverWrapper(object):
 
         self.solver.net.layers[0].set_roidb(roidb)
 
-    def snapshot(self):
+    def snapshot(self, suffix = None):
         """Take a snapshot of the network after unnormalizing the learned
         bounding-box regression weights. This enables easy use at test-time.
         """
         net = self.solver.net
+        
+        if suffix == None:
+            suffix = self.solver.iter
 
         scale_bbox_params = (cfg.TRAIN.BBOX_REG and
                              cfg.TRAIN.BBOX_NORMALIZE_TARGETS and
@@ -78,12 +82,8 @@ class SolverWrapper(object):
 
         infix = ('_' + cfg.TRAIN.SNAPSHOT_INFIX
                  if cfg.TRAIN.SNAPSHOT_INFIX != '' else '')
-        if cfg.TRAIN.WITH_TEST == True:
-            filename = (self.solver_param.snapshot_prefix + infix +
-                        '_withtest' + '.caffemodel')
-        else:
-            filename = (self.solver_param.snapshot_prefix + infix +
-                        '_iter_{:d}'.format(self.solver.iter) + '.caffemodel')
+        filename = (self.solver_param.snapshot_prefix + infix +
+                        '_iter_{0}'.format(suffix) + '.caffemodel')
         filename = os.path.join(self.output_dir, filename)
 
         net.save(str(filename))
@@ -117,6 +117,7 @@ class SolverWrapper(object):
         last_snapshot_iter = -1
         timer = Timer()
         model_paths = []
+        snap_suffix = "{0}_{1}_{2}".format(datetime.datetime.now().strftime("%Y%m%d"), self.solver.iter,max_iters)
         while self.solver.iter < max_iters:
             # Make one SGD update
             timer.tic()
@@ -127,7 +128,7 @@ class SolverWrapper(object):
 
             if self.solver.iter % cfg.TRAIN.SNAPSHOT_ITERS == 0:
                 last_snapshot_iter = self.solver.iter
-                model_paths.append(self.snapshot())
+                model_paths.append(self.snapshot(snap_suffix))
 
         if last_snapshot_iter != self.solver.iter:
             model_paths.append(self.snapshot())

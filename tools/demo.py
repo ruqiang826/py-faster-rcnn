@@ -14,7 +14,7 @@ See README.md for installation instructions before running.
 """
 
 import _init_paths
-from fast_rcnn.config import cfg
+from fast_rcnn.config import cfg, CLASSES
 from fast_rcnn.test import im_detect
 from fast_rcnn.nms_wrapper import nms
 from utils.timer import Timer
@@ -25,17 +25,6 @@ import caffe, os, sys, cv2
 import argparse
 import pdb
 
-CLASSES = ('__background__', 'king', 'eking', 'giant',
-           'arena', 'darena', 'earena','bomb', 'witch',
-           'musketeer', 'prince', 'dragon', 'knight',
-           'minipekka', 'skeleton', 'skeletonarmy',
-           'speargoblin', 'speargoblins', 'archers',
-           'goblin', 'goblins')
-#           'aeroplane', 'bicycle', 'bird', 'boat',
-#           'bottle', 'bus', 'car', 'cat', 'chair',
-#           'cow', 'diningtable', 'dog', 'horse',
-#           'motorbike', 'person', 'pottedplant',
-#           'sheep', 'sofa', 'train', 'tvmonitor')
 
 NETS = {'vgg16': ('VGG16',
                   'VGG16_faster_rcnn_final.caffemodel'),

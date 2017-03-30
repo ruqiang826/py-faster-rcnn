@@ -17,7 +17,7 @@ import cPickle
 import subprocess
 import uuid
 from voc_eval import voc_eval
-from fast_rcnn.config import cfg
+from fast_rcnn.config import cfg, CLASSES
 
 class pascal_voc(imdb):
     def __init__(self, image_set, year, devkit_path=None):
@@ -33,14 +33,7 @@ class pascal_voc(imdb):
         #                 'cow', 'diningtable', 'dog', 'horse',
         #                 'motorbike', 'person', 'pottedplant',
         #                 'sheep', 'sofa', 'train', 'tvmonitor')
-        self._classes = ('__background__', # always index 0
-                         'king', 'eking', 'giant',
-                         'arena', 'darena', 'earena',
-                         'bomb', 'witch', 'musketeer',
-                         'prince', 'dragon', 'knight',
-                         'minipekka', 'skeleton', 'skeletonarmy',
-                         'speargoblin', 'speargoblins', 'archers',
-                         'goblin', 'goblins')
+        self._classes = CLASSES
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
         self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
@@ -221,7 +214,8 @@ class pascal_voc(imdb):
             y1 = float(bbox.find('ymin').text) - 1
             x2 = float(bbox.find('xmax').text) - 1
             y2 = float(bbox.find('ymax').text) - 1
-            cls = self._class_to_ind[obj.find('name').text.lower().strip()]
+            #cls = self._class_to_ind[obj.find('name').text.lower().strip()]
+            cls = self._class_to_ind[obj.find('name').text.strip()]
             boxes[ix, :] = [x1, y1, x2, y2]
             gt_classes[ix] = cls
             overlaps[ix, cls] = 1.0
