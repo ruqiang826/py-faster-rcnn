@@ -22,7 +22,8 @@ import numpy as np
 # `pip install easydict` if you don't have it
 from easydict import EasyDict as edict
 
-CLASSES = ("__background__", "second1", "second2", "second3", "secondE1", "secondE2", "secondE3", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "l9", "l10", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "P9", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "W0", "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9", "W10", "archers", "archersC", "archersE", "arrowE", "arrowL", "arrowC", "arena", "earena", "darena", "bomb", "bombC", "bombE", "dragon", "dragonC", "dragonE", "king", "eking", "fireballE", "fireballL", "fireballC", "giant", "giantC", "giantE", "goblins", "goblinsC", "goblinsE", "knight", "knightC", "knightE", "minipekka", "minipekkaC", "minipekkaE", "musketeer", "musketeerC", "musketeerE", "prince", "princeC", "princeE", "skeleton", "skeletonC", "skeletonE", "skeletonarmy", "skeletonarmyC", "skeletonarmyE", "speargoblins", "speargoblinsC", "speargoblinsE", "witch", "witchC", "witchE")
+CLASSES = ("__background__", "N0", "N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9")
+
 __C = edict()
 # Consumers can get config by:
 #   from fast_rcnn_config import cfg
@@ -59,7 +60,7 @@ __C.TRAIN.BG_THRESH_HI = 0.5
 __C.TRAIN.BG_THRESH_LO = 0.1
 
 # Use horizontally-flipped images during training?
-__C.TRAIN.USE_FLIPPED = True
+__C.TRAIN.USE_FLIPPED = False
 
 # Train bounding-box regressors
 __C.TRAIN.BBOX_REG = True
@@ -69,7 +70,7 @@ __C.TRAIN.BBOX_REG = True
 __C.TRAIN.BBOX_THRESH = 0.5
 
 # Iterations between snapshots
-__C.TRAIN.SNAPSHOT_ITERS = 200
+__C.TRAIN.SNAPSHOT_ITERS = 2000
 
 # solver.prototxt specifies the snapshot path prefix, this adds an optional
 # infix to yield the path: <prefix>[_<infix>]_iters_XYZ.caffemodel
@@ -123,7 +124,7 @@ __C.TRAIN.RPN_BBOX_INSIDE_WEIGHTS = (1.0, 1.0, 1.0, 1.0)
 # and give negatives a weight of (1 - p)
 # Set to -1.0 to use uniform example weighting
 __C.TRAIN.RPN_POSITIVE_WEIGHT = -1.0
-__C.TRAIN.WITH_TEST = True
+__C.TRAIN.WITH_TEST = False
 
 
 #

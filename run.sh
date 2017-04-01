@@ -1,12 +1,23 @@
 
 homedir=`pwd`
-iters="1300 320 340"
+iters="13000"
 today=`date -d '1 day ago' +'%Y%m%d'`
-classes="archers archersC  archersE  arena  arrowE arrowL  arrowC earena  darena  bomb  bombC  bombE  dragon  dragonC  dragonE  fireballE fireballL fireballC king  eking  giant  giantC  giantE  goblins  goblinsC  goblinsE  knight  knightC  knightE  minipekka  minipekkaC  minipekkaE  musketeer  musketeerC  musketeerE  prince  princeC  princeE  skeleton  skeletonC  skeletonE  skeletonarmy  skeletonarmyC  skeletonarmyE  speargoblins  speargoblinsC  speargoblinsE  witch  witchC  witchE"
+
+#from_data="data"
+#from_data="data_static"
+from_data="data_number"
+classes=`cat ../labelImg/data/predefined_classes.txt | sed ':1;$!N;s/\n/ /;t1'`
 
 # replace CLASSES list. "../labelImg/data/predefined_classes.txt" is the standard class list
 T1=`cat ../labelImg/data/predefined_classes.txt | sed ':1;$!N;s/\n/", "/;t1'` ;T2=`echo "CLASSES = (\"__background__\", \"$T1\")"` ;  sed -i "s/^CLASSES.*$/${T2}/g" lib/fast_rcnn/config.py
 
+
+# flip image set in config.py , and the image number should be even
+
+# repalce the net param
+class_num=`wc -l ../labelImg/data/predefined_classes.txt | cut -f1 -d' '`
+python tools/replace_net_param.py $class_num models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/train.prototxt
+python tools/replace_net_param.py $class_num models/pascal_voc/VGG_CNN_M_1024/faster_rcnn_end2end/test.prototxt
 
 
 for iter in `echo $iters`
@@ -17,22 +28,23 @@ do
   rm data/VOCdevkit2007/VOC2007/JPEGImages/*.jpg
   rm data/VOCdevkit2007/VOC2007/JPEGImages/*.png
   
-  cp ../CR_AI/data/annotation/* data/VOCdevkit2007/VOC2007/Annotations/
-  cp ../CR_AI/data/img/* data/VOCdevkit2007/VOC2007/JPEGImages/
+  cp ../CR_AI/$from_data/annotation/* data/VOCdevkit2007/VOC2007/Annotations/
+  cp ../CR_AI/$from_data/img/* data/VOCdevkit2007/VOC2007/JPEGImages/
   
   cd ../CR_AI/
   
   test_list=`python script/split_data.py data/img`
   
   cd -
-  rm test_data/img/*
-  rm test_data/annotation/*
-  cd data/VOCdevkit2007/VOC2007/Annotations/
-  mv $test_list  $homedir/test_data/annotation
-  cd -
-  cd data/VOCdevkit2007/VOC2007/JPEGImages/
-  mv $test_list  $homedir/test_data/img
-  cd -
+  # for test dataset
+  ##rm test_data/img/*
+  ##rm test_data/annotation/*
+  ##cd data/VOCdevkit2007/VOC2007/Annotations/
+  ##mv $test_list  $homedir/test_data/annotation
+  ##cd -
+  ##cd data/VOCdevkit2007/VOC2007/JPEGImages/
+  ##mv $test_list  $homedir/test_data/img
+  ##cd -
   
   # 2. generate training list
   ls -1 data/VOCdevkit2007/VOC2007/JPEGImages | sed 's/.png//g' | sed 's/.jpg//g' > data/VOCdevkit2007/VOC2007/ImageSets/Main/trainval.txt

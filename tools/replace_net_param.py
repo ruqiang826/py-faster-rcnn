@@ -9,7 +9,7 @@ test =  {"\"bbox_pred\"":['num_output: ',4], "\"cls_score\"":["num_output: ",1]}
 train = {"\"bbox_pred\"":['num_output: ',4], "input-data":['param_str: \"\'num_classes\': ',1], "roi-data":['param_str: \"\'num_classes\': ', 1], "\"cls_score\"":["num_output: ",1]}
 
 if __name__ == '__main__':
-  total_class = int(sys.argv[1])
+  total_class = int(sys.argv[1]) + 1   # +1 for background
   infile = sys.argv[2]
   if infile.rfind("train.prototxt") != -1:
     replace_dict = train
